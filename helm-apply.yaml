@@ -1,0 +1,25 @@
+- name: Deploy to K8s Cluster
+  hosts: bastion
+  become: yes
+  become_user: root
+  vars_files:
+    - ./vars.yaml
+  tasks:
+  - name: access key
+    shell: |
+      aws configure set aws_access_key_id {{access_key}}
+  - name: secret key
+    shell: |
+      aws configure set aws_secret_access_key {{secret_key}}
+  - name: token
+    shell: |
+      aws configure set aws_session_token {{aws_session_token}}
+  - name: connect to the cluster
+    shell: |
+      aws eks update-kubeconfig --name {{eks_cluster_name}} --region {{region}}
+  - name: Add helm repo
+    shell: |
+      helm repo add  {{reponame}}  https://github.worldpay.com/pages/Docet-USA/EKS_Configuration/
+  - name: Install  Chart
+    shell: |
+      helm   install   {{chartname}}   --set   eks_cluster_name={{eks_cluster_name}}   --set   oidc_role_arn={{rolearn}}    {{reponame}}/eks_config
